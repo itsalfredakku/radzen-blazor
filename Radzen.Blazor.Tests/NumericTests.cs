@@ -16,9 +16,9 @@ namespace Radzen.Blazor.Tests
 
             component.Render();
 
-            Assert.Contains(@$"rz-spinner", component.Markup);
-            Assert.Contains(@$"rz-spinner-up", component.Markup);
-            Assert.Contains(@$"rz-spinner-down", component.Markup);
+            Assert.Contains(@$"rz-numeric", component.Markup);
+            Assert.Contains(@$"rz-numeric-up", component.Markup);
+            Assert.Contains(@$"rz-numeric-down", component.Markup);
         }
 
         [Fact]
@@ -54,7 +54,7 @@ namespace Radzen.Blazor.Tests
                 parameters.Add<decimal?>(p => p.Min, minValue);
             });
 
-            component.Find(".rz-spinner-down").Click();
+            component.Find(".rz-numeric-down").Click();
 
             Assert.False(raised, $"Numeric value should Change event if value is less than min value.");
         }
@@ -108,7 +108,7 @@ namespace Radzen.Blazor.Tests
                 parameters.Add<decimal?>(p => p.Max, maxValue);
             });
 
-            component.Find(".rz-spinner-up").Click();
+            component.Find(".rz-numeric-up").Click();
 
             Assert.False(raised, $"Numeric value should Change event if value is less than min value.");
         }
@@ -216,12 +216,12 @@ namespace Radzen.Blazor.Tests
 
             var component = ctx.RenderComponent<RadzenNumeric<double>>();
 
-            component.SetParametersAndRender(parameters => parameters.Add<bool>(p => p.AutoComplete, false));
+            component.SetParametersAndRender(parameters => parameters.AddUnmatched("AutoComplete", false));
 
             Assert.Contains(@$"autocomplete=""off""", component.Markup);
             Assert.Contains(@$"aria-autocomplete=""none""", component.Markup);
 
-            component.SetParametersAndRender(parameters => parameters.Add<bool>(p => p.AutoComplete, true));
+            component.SetParametersAndRender(parameters => parameters.AddUnmatched("AutoComplete", true));
 
             Assert.Contains(@$"autocomplete=""on""", component.Markup);
             Assert.DoesNotContain(@$"aria-autocomplete", component.Markup);
@@ -232,7 +232,7 @@ namespace Radzen.Blazor.Tests
             Assert.DoesNotContain(@$"aria-autocomplete", component.Markup);
 
             component.Instance.DefaultAutoCompleteAttribute = "autocomplete-custom";
-            component.SetParametersAndRender(parameters => parameters.Add(p => p.AutoComplete, false));
+            component.SetParametersAndRender(parameters => parameters.AddUnmatched("AutoComplete", false));
 
             Assert.Contains(@$"autocomplete=""autocomplete-custom""", component.Markup);
             Assert.Contains(@$"aria-autocomplete=""none""", component.Markup);
@@ -245,22 +245,22 @@ namespace Radzen.Blazor.Tests
 
             var component = ctx.RenderComponent<RadzenNumeric<double>>();
 
-            component.SetParametersAndRender(parameters => parameters.Add<bool>(p => p.AutoComplete, false));
+            component.SetParametersAndRender(parameters => parameters.AddUnmatched("AutoComplete", false));
             component.SetParametersAndRender(parameters => parameters.Add<AutoCompleteType>(p => p.AutoCompleteType, AutoCompleteType.On));
 
             Assert.Contains(@$"autocomplete=""off""", component.Markup);
 
-            component.SetParametersAndRender(parameters => parameters.Add<bool>(p => p.AutoComplete, true));
+            component.SetParametersAndRender(parameters => parameters.AddUnmatched("AutoComplete", true));
             component.SetParametersAndRender(parameters => parameters.Add<AutoCompleteType>(p => p.AutoCompleteType, AutoCompleteType.Off));
 
             Assert.Contains(@$"autocomplete=""off""", component.Markup);
 
-            component.SetParametersAndRender(parameters => parameters.Add<bool>(p => p.AutoComplete, true));
+            component.SetParametersAndRender(parameters => parameters.AddUnmatched("AutoComplete", true));
             component.SetParametersAndRender(parameters => parameters.Add<AutoCompleteType>(p => p.AutoCompleteType, AutoCompleteType.BdayMonth));
 
             Assert.Contains(@$"autocomplete=""{AutoCompleteType.BdayMonth.GetAutoCompleteValue()}""", component.Markup);
 
-            component.SetParametersAndRender(parameters => parameters.Add<bool>(p => p.AutoComplete, true));
+            component.SetParametersAndRender(parameters => parameters.AddUnmatched("AutoComplete", true));
             component.SetParametersAndRender(parameters => parameters.Add<AutoCompleteType>(p => p.AutoCompleteType, AutoCompleteType.BdayYear));
 
             Assert.Contains(@$"autocomplete=""{AutoCompleteType.BdayYear.GetAutoCompleteValue()}""", component.Markup);
@@ -329,7 +329,7 @@ namespace Radzen.Blazor.Tests
                 parameters.Add(p => p.Change, args => { raised = true; newValue = args; });
             });
 
-            component.Find(".rz-spinner-up").Click();
+            component.Find(".rz-numeric-up").Click();
 
             Assert.True(raised, "Numeric Change should be raised on step up");
             Assert.True(object.Equals(expectedValue, newValue), $"Numeric value should be incremented on step up. Expected value: {expectedValue}, value: {newValue}");
@@ -338,7 +338,7 @@ namespace Radzen.Blazor.Tests
 
             component.SetParametersAndRender(parameters => parameters.Add(p => p.ValueChanged, args => { raised = true; }));
 
-            component.Find(".rz-spinner-up").Click();
+            component.Find(".rz-numeric-up").Click();
 
             Assert.True(raised, "Numeric ValueChanged should be raised on step up");
         }
@@ -364,7 +364,7 @@ namespace Radzen.Blazor.Tests
                 parameters.Add(p => p.Change, args => { raised = true; newValue = args; });
             });
 
-            component.Find(".rz-spinner-down").Click();
+            component.Find(".rz-numeric-down").Click();
 
             Assert.True(raised, "Numeric Change should be raised on step up");
             Assert.True(object.Equals(expectedValue, newValue), $"Numeric value should be incremented on step up. Expected value: {expectedValue}, value: {newValue}");
@@ -373,7 +373,7 @@ namespace Radzen.Blazor.Tests
 
             component.SetParametersAndRender(parameters => parameters.Add(p => p.ValueChanged, args => { raised = true; }));
 
-            component.Find(".rz-spinner-down").Click();
+            component.Find(".rz-numeric-down").Click();
 
             Assert.True(raised, "Numeric ValueChanged should be raised on step up");
         }
@@ -387,9 +387,9 @@ namespace Radzen.Blazor.Tests
 
             component.Render();
 
-            Assert.Contains(@$"rz-spinner-button-icon", component.Markup);
-            Assert.Contains(@$"rz-spinner-up", component.Markup);
-            Assert.Contains(@$"rz-spinner-down", component.Markup);
+            Assert.Contains(@$"rz-numeric-button-icon", component.Markup);
+            Assert.Contains(@$"rz-numeric-up", component.Markup);
+            Assert.Contains(@$"rz-numeric-down", component.Markup);
         }
 
         [Fact]
@@ -401,9 +401,9 @@ namespace Radzen.Blazor.Tests
 
             component.Render();
 
-            Assert.DoesNotContain(@$"rz-spinner-button-icon", component.Markup);
-            Assert.DoesNotContain(@$"rz-spinner-up", component.Markup);
-            Assert.DoesNotContain(@$"rz-spinner-down", component.Markup);
+            Assert.DoesNotContain(@$"rz-numeric-button-icon", component.Markup);
+            Assert.DoesNotContain(@$"rz-numeric-up", component.Markup);
+            Assert.DoesNotContain(@$"rz-numeric-down", component.Markup);
         }
 
         [Fact]

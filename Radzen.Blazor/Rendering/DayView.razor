@@ -16,7 +16,7 @@
             @for (var date = StartDate; date < EndDate; date = date.AddMinutes(MinutesPerSlot))
             {
                 var slotDate = date;
-                    <div @onclick=@(args => OnSlotClick(slotDate)) @attributes=@Attributes(date) ondragover="event.preventDefault();" @ondrop=@(args => @OnDrop(slotDate))></div>
+                    <div @onclick=@(args => OnSlotClick(slotDate)) ondragover="event.preventDefault();" @ondrop=@(args => @OnDrop(slotDate)) @attributes=@Attributes(date)></div>
             }
         </div>
     </div>
@@ -98,9 +98,7 @@
         else if (key == "Enter")
         {
             await OnSlotClick(CurrentDate);
-#if NET5_0_OR_GREATER
             await view.FocusAsync();
-#endif
 
             preventKeyPress = true;
         }
@@ -109,9 +107,7 @@
             if (currentAppointments.Any())
             {
                 await Scheduler.SelectAppointment(currentAppointments.ElementAt(currentAppointment));
-#if NET5_0_OR_GREATER
                 await view.FocusAsync();
-#endif
             }
 
             preventKeyPress = true;

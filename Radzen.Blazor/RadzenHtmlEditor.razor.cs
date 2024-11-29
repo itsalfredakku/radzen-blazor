@@ -120,7 +120,6 @@ namespace Radzen.Blazor
         ElementReference ContentEditable { get; set; }
         RadzenTextArea TextArea { get; set; }
 
-#if NET5_0_OR_GREATER
         /// <summary>
         /// Focuses the editor.
         /// </summary>
@@ -136,7 +135,6 @@ namespace Radzen.Blazor
                 return TextArea.Element.FocusAsync();
             }
         }
-#endif
 
         internal RadzenHtmlEditorCommandState State { get; set; } = new RadzenHtmlEditorCommandState();
 
@@ -192,9 +190,17 @@ namespace Radzen.Blazor
         public async Task ExecuteCommandAsync(string name, string value = null)
         {
             State = await JSRuntime.InvokeAsync<RadzenHtmlEditorCommandState>("Radzen.execCommand", ContentEditable, name, value);
+
             await OnExecuteAsync(name);
-            Html = State.Html;
-            await OnChange();
+
+            if (Html != State.Html)
+            {
+                Html = State.Html;
+
+                htmlChanged = true;
+
+                await OnChange();
+            }
         }
 
         /// <summary>
@@ -213,7 +219,11 @@ namespace Radzen.Blazor
 
         private async Task SourceChanged(string html)
         {
-            Html = html;
+            if (Html != html)
+            {
+                Html = html;
+                htmlChanged = true;
+            }
             await JSRuntime.InvokeVoidAsync("Radzen.innerHTML", ContentEditable, Html);
             await OnChange();
             StateHasChanged();
@@ -221,8 +231,21 @@ namespace Radzen.Blazor
 
         async Task OnChange()
         {
-            await ValueChanged.InvokeAsync(Html);
-            await Change.InvokeAsync(Html);
+            if (htmlChanged)
+            {
+                htmlChanged = false;
+
+                _value = Html;
+
+                await ValueChanged.InvokeAsync(Html);
+
+                if (FieldIdentifier.FieldName != null)
+                {
+                    EditContext?.NotifyFieldChanged(FieldIdentifier);
+                }
+
+                await Change.InvokeAsync(Html);
+            }
         }
 
         internal async Task OnExecuteAsync(string name)
@@ -259,6 +282,8 @@ namespace Radzen.Blazor
         {
             await OnChange();
         }
+
+        bool htmlChanged = false;
 
         bool visibleChanged = false;
         bool firstRender = true;
@@ -330,7 +355,11 @@ namespace Radzen.Blazor
         [JSInvokable]
         public void OnChange(string html)
         {
-            Html = html;
+            if (Html != html)
+            {
+                Html = html;
+                htmlChanged = true;
+            }
             Input.InvokeAsync(html);
         }
 
@@ -376,7 +405,7 @@ namespace Radzen.Blazor
         /// <inheritdoc />
         protected override string GetComponentCssClass()
         {
-            return "rz-html-editor";
+            return GetClassList("rz-html-editor").ToString();
         }
 
         /// <inheritdoc />
@@ -388,6 +417,42 @@ namespace Radzen.Blazor
             {
                 JSRuntime.InvokeVoidAsync("Radzen.destroyEditor", ContentEditable);
             }
+        }
+
+        /// <summary>
+        /// Gets or sets the callback which when a file is uploaded.
+        /// </summary>
+        /// <value>The complete callback.</value>
+        [Parameter]
+        public EventCallback<UploadCompleteEventArgs> UploadComplete { get; set; }
+
+
+        internal async Task RaiseUploadComplete(UploadCompleteEventArgs args)
+        {
+            await UploadComplete.InvokeAsync(args);
+        }
+
+        /// <summary>
+        /// Invoked by interop when the upload is complete.
+        /// </summary>
+        [JSInvokable("OnUploadComplete")]
+        public async Task OnUploadComplete(string response)
+        {
+            System.Text.Json.JsonDocument doc = null;
+
+            if (!string.IsNullOrEmpty(response))
+            {
+                try
+                {
+                    doc = System.Text.Json.JsonDocument.Parse(response);
+                }
+                catch (System.Text.Json.JsonException)
+                {
+                    //
+                }
+            }
+
+            await UploadComplete.InvokeAsync(new UploadCompleteEventArgs() { RawResponse = response, JsonResponse = doc });
         }
     }
 }

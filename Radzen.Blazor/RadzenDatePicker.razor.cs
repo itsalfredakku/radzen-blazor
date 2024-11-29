@@ -151,6 +151,7 @@ namespace Radzen.Blazor
         {
             if (ShowTimeOkButton)
             {
+                DateTimeValue = newValue;
                 CurrentDate = newValue;
             }
             else
@@ -169,9 +170,9 @@ namespace Radzen.Blazor
 
             if (v < 0)
             {
-                newHour = 23;
-                newMinute = 59;
-                newSecond = 59;
+                newHour = string.IsNullOrEmpty(HoursStep) ? 23 : 0;
+                newMinute = string.IsNullOrEmpty(MinutesStep) ? 59 : 0;
+                newSecond = string.IsNullOrEmpty(SecondsStep) ? 59 : 0;
             }
 
             var newValue = new DateTime(CurrentDate.Year, CurrentDate.Month, CurrentDate.Day, newHour > 23 || newHour < 0 ? 0 : newHour, newMinute, newSecond);
@@ -196,9 +197,12 @@ namespace Radzen.Blazor
             await UpdateValueFromTime(newValue);
         }
 
-        async Task OkClick()
+        async Task OkClick(bool shouldClose = true)
         {
-            Close();
+            if (shouldClose)
+            {
+                Close();
+            }
 
             if(Min.HasValue && CurrentDate < Min.Value || Max.HasValue && CurrentDate > Max.Value)
             {
@@ -312,6 +316,12 @@ namespace Radzen.Blazor
         /// <value>The input CSS class.</value>
         [Parameter]
         public string InputClass { get; set; }
+        /// <summary>
+        /// Gets or sets the button CSS class.
+        /// </summary>
+        /// <value>The button CSS class.</value>
+        [Parameter]
+        public string ButtonClass { get; set; }
 
         /// <summary>
         /// Gets or sets the Minimum Selectable Date.
@@ -693,7 +703,7 @@ namespace Radzen.Blazor
 
         private string ButtonClasses
         {
-            get => $"rz-button-icon-left rzi rzi-{(TimeOnly ? "time" : "calendar")}";
+            get => $"notranslate rz-button-icon-left rzi rzi-{(TimeOnly ? "time" : "calendar")}";
         }
 
         /// <summary>
@@ -904,7 +914,7 @@ namespace Radzen.Blazor
 
         private string getStyle()
         {
-            return $"display: inline-block;{(Inline ? "overflow:auto;" : "")}{(Style != null ? Style : "")}";
+            return $"{(Inline ? "overflow:auto;" : "")}{(Style != null ? Style : "")}";
         }
 
         /// <summary>
@@ -934,11 +944,11 @@ namespace Radzen.Blazor
             {
                 if (Inline)
                 {
-                    return "white-space: nowrap";
+                    return "";
                 }
                 else
                 {
-                    return $"width: 320px; {contentStyle}";
+                    return $"{contentStyle}";
                 }
             }
         }
@@ -949,6 +959,10 @@ namespace Radzen.Blazor
             {
                 DateTimeOffset? offset = DateTime.SpecifyKind((DateTime)Value, Kind);
                 await ValueChanged.InvokeAsync((TValue)(object)offset);
+            }
+            else if ((typeof(TValue) == typeof(DateTime) || typeof(TValue) == typeof(DateTime?)) && Value != null)
+            {
+                await ValueChanged.InvokeAsync((TValue)(object)DateTime.SpecifyKind((DateTime)Value, Kind));
             }
             else
             {
@@ -964,7 +978,7 @@ namespace Radzen.Blazor
         protected override string GetComponentCssClass()
         {
             return ClassList.Create()
-                            .Add("rz-calendar-inline", Inline)
+                            .Add("rz-datepicker-inline", Inline)
                             .Add(FieldIdentifier, EditContext)
                             .ToString();
         }
@@ -974,7 +988,7 @@ namespace Radzen.Blazor
             if (ShowTimeOkButton)
             {
                 CurrentDate = new DateTime(newValue.Year, newValue.Month, newValue.Day, CurrentDate.Hour, CurrentDate.Minute, CurrentDate.Second);
-                await OkClick();
+                await OkClick(!ShowTime);
             }
             else
             {
@@ -986,9 +1000,7 @@ namespace Radzen.Blazor
                     Close();
                 }
             }
-#if NET5_0_OR_GREATER
             await FocusAsync();
-#endif
         }
 
         private void SetMonth(int month)
@@ -1130,9 +1142,7 @@ namespace Radzen.Blazor
             if (PopupRenderMode == PopupRenderMode.OnDemand && !Disabled && !ReadOnly && !Inline)
             {
                 await popup.ToggleAsync(Element);
-#if NET5_0_OR_GREATER
                 await FocusAsync();
-#endif
             }
         }
         DateTime FocusedDate { get; set; } = DateTime.Now;
@@ -1141,9 +1151,9 @@ namespace Radzen.Blazor
         {
             return ClassList.Create()
                                .Add("rz-state-default", !forCell)
-                               .Add("rz-datepicker-other-month", CurrentDate.Month != date.Month)
+                               .Add("rz-calendar-other-month", CurrentDate.Month != date.Month)
                                .Add("rz-state-active", !forCell && DateTimeValue.HasValue && DateTimeValue.Value.Date.CompareTo(date.Date) == 0)
-                               .Add("rz-datepicker-today", !forCell && DateTime.Now.Date.CompareTo(date.Date) == 0)
+                               .Add("rz-calendar-today", !forCell && DateTime.Now.Date.CompareTo(date.Date) == 0)
                                .Add("rz-state-focused", !forCell && FocusedDate.Date.CompareTo(date.Date) == 0)
                                .Add("rz-state-disabled", !forCell && dateArgs.Disabled)
                                .ToString();
@@ -1170,30 +1180,27 @@ namespace Radzen.Blazor
             {
                 preventKeyPress = true;
 
-                await SetDay(FocusedDate);
+                if (!DateAttributes(FocusedDate).Disabled)
+                {
+                    await SetDay(FocusedDate);
 
-                await ClosePopup();
-#if NET5_0_OR_GREATER
-                await FocusAsync();
-#endif
+                    await ClosePopup();
+                    await FocusAsync();
+                }
             }
             else if (key == "Escape")
             {
                 preventKeyPress = false;
 
                 await ClosePopup();
-#if NET5_0_OR_GREATER
                 await FocusAsync();
-#endif
             }
             else if (key == "Tab")
             {
                 preventKeyPress = false;
 
                 await ClosePopup();
-#if NET5_0_OR_GREATER
                 await FocusAsync();
-#endif
             }
             else
             {
@@ -1209,9 +1216,7 @@ namespace Radzen.Blazor
                 preventKeyPress = false;
 
                 await ClosePopup();
-#if NET5_0_OR_GREATER
                 await FocusAsync();
-#endif
             }
         }
 
@@ -1244,9 +1249,7 @@ namespace Radzen.Blazor
                 preventKeyPress = false;
 
                 await ClosePopup();
-#if NET5_0_OR_GREATER
                 await FocusAsync();
-#endif
             }
             else
             {
@@ -1256,6 +1259,8 @@ namespace Radzen.Blazor
 
         internal async Task TogglePopup()
         {
+            if (Inline) return;
+
             if (PopupRenderMode == PopupRenderMode.Initial)
             {
                 await JSRuntime.InvokeVoidAsync("Radzen.togglePopup", Element, PopupID, false, null, null, true, true);
@@ -1268,6 +1273,8 @@ namespace Radzen.Blazor
 
         async Task ClosePopup()
         {
+            if (Inline) return;
+
             if (PopupRenderMode == PopupRenderMode.Initial)
             {
                 await JSRuntime.InvokeVoidAsync("Radzen.closePopup", PopupID);
@@ -1279,7 +1286,7 @@ namespace Radzen.Blazor
         }
 
         bool preventKeyPress = false;
-#if NET5_0_OR_GREATER
+
         /// <inheritdoc/>
         public async ValueTask FocusAsync()
         {
@@ -1290,6 +1297,5 @@ namespace Radzen.Blazor
             catch
             {}
         }
-#endif
     }
 }

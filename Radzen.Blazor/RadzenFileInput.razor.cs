@@ -65,7 +65,7 @@ namespace Radzen.Blazor
         /// Gets the button class list.
         /// </summary>
         /// <value>The button class list.</value>
-        ClassList ButtonClassList => ClassList.Create("rz-button rz-button-icon-only rz-light")
+        ClassList ButtonClassList => ClassList.Create("rz-button rz-button-icon-only rz-base rz-shade-default")
                                               .AddDisabled(Disabled);
 
         /// <inheritdoc />
@@ -97,6 +97,23 @@ namespace Radzen.Blazor
                 }
 
                 return false;
+            }
+        }
+
+        private string ImageValue
+        {
+            get
+            {
+                if (Value == null)
+                {
+                    return string.Empty;
+                }
+                else if (Value is byte[] bytes)
+                {
+                    return System.Text.Encoding.Default.GetString(bytes);
+                }
+
+                return Value.ToString();
             }
         }
 
@@ -136,6 +153,11 @@ namespace Radzen.Blazor
         [JSInvokable("RadzenUpload.OnChange")]
         public async System.Threading.Tasks.Task OnChange(IEnumerable<PreviewFileInfo> files)
         {
+            if(files == null || !files.Any())
+            {
+                return;
+            }
+
             var file = files.FirstOrDefault();
 
             FileSize = file.Size;

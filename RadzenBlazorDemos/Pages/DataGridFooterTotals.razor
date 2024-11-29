@@ -10,11 +10,12 @@
     <Columns>
         <RadzenDataGridColumn Width="60px" Title="#" Filterable="false" Sortable="false" TextAlign="TextAlign.Center">
             <Template>
-                <RenderOnceComponent CanRender=@(!(index >= ordersGrid.PageSize))>
+                @{var pageSize = Math.Min(ordersGrid.PageSize, ordersGrid.View.Count());}
+                <RenderOnceComponent CanRender=@(!(index >= pageSize))>
                 @{
-                    ResetIndex(index >= ordersGrid.PageSize);
+                    ResetIndex(index >= pageSize);
                 }
-                @((ordersGrid.CurrentPage * ordersGrid.PageSize) + index++ + 1)
+                @((ordersGrid.CurrentPage * pageSize) + index++ + 1)
                 </RenderOnceComponent>
             </Template>
         </RadzenDataGridColumn>
@@ -28,12 +29,12 @@
                 @order.Employee?.FirstName @order.Employee?.LastName
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn Property="OrderDate" Title="Order Date" FormatString="{0:d}">
+        <RadzenDataGridColumn Property="@nameof(Order.OrderDate)" Title="Order Date" FormatString="{0:d}">
             <FooterTemplate>
                 Last order date: <b>@String.Format("{0:d}", orders.OrderByDescending(o => o.OrderDate).FirstOrDefault()?.OrderDate)</b>
             </FooterTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn Property="Freight" Title="Freight">
+        <RadzenDataGridColumn Property="@nameof(Order.Freight)" Title="Freight">
             <Template Context="order">
                 @String.Format(new System.Globalization.CultureInfo("en-US"), "{0:C}", order.Freight)
             </Template>

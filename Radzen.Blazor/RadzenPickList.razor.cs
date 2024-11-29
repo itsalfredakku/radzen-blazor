@@ -19,7 +19,14 @@ namespace Radzen.Blazor
         /// </summary>
         /// <value><c>true</c> if multiple selection is allowed; otherwise, <c>false</c>.</value>
         [Parameter]
-        public bool Multiple { get; set; } = false;
+        public bool Multiple { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether component is disabled.
+        /// </summary>
+        /// <value><c>true</c> if component is disabled; otherwise, <c>false</c>.</value>
+        [Parameter]
+        public bool Disabled { get; set; }
 
         /// <summary>
         /// Gets or sets the source header
@@ -34,6 +41,27 @@ namespace Radzen.Blazor
         /// <value>The target header.</value>
         [Parameter]
         public RenderFragment TargetHeader { get; set; }
+
+        /// <summary>
+        /// Gets or sets the common placeholder
+        /// </summary>
+        /// <value>The common placeholder.</value>
+        [Parameter]
+        public string Placeholder { get; set; }
+
+        /// <summary>
+        /// Gets or sets the source placeholder
+        /// </summary>
+        /// <value>The source placeholder.</value>
+        [Parameter]
+        public string SourcePlaceholder { get; set; }
+
+        /// <summary>
+        /// Gets or sets the target placeholder
+        /// </summary>
+        /// <value>The target placeholder.</value>
+        [Parameter]
+        public string TargetPlaceholder { get; set; }
 
         /// <summary>
         /// Gets or sets the text property

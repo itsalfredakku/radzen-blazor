@@ -34,9 +34,9 @@ builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(optio
 
 // Add Radzen.Blazor services
 builder.Services.AddRadzenComponents();
+builder.Services.AddRadzenQueryStringThemeService();
 
 // Demo services
-builder.Services.AddScoped<ThemeService>();
 builder.Services.AddScoped<CompilerService>();
 builder.Services.AddScoped<ExampleService>();
 
@@ -91,7 +91,7 @@ app.UseRequestLocalization(new RequestLocalizationOptions
 
 app.UseHttpsRedirection();
 app.UseDefaultFiles();
-app.UseStaticFiles();
+app.MapStaticAssets();
 app.UseRouting();
 app.UseAntiforgery();
 app.MapRazorPages();

@@ -1,26 +1,26 @@
 @using System.Globalization
 
-<div class="container my-5">
-    <div class="row">
-        <div class="col">
-            <RadzenCard class="w-100 mb-4" >
-                <RadzenCheckBox @bind-Value="@annotation" Name="annotation"></RadzenCheckBox>
-                <RadzenLabel Text="Annotation" Component="annotation" Style="margin-left: 8px; vertical-align: middle;" />
-            </RadzenCard>
-            <RadzenChart>
-                <RadzenLineSeries Smooth="true" Data="@revenue2023" CategoryProperty="Date" Title="2023" ValueProperty="Revenue" RenderingOrder="1">
-                    <RadzenSeriesAnnotation Visible="@annotation" TItem="DataItem" Data="@revenue2023[7]" OffsetY="-16" Text="Acquisition" />
-                    <RadzenMarkers MarkerType="MarkerType.Circle" />
-                </RadzenLineSeries>
-                <RadzenCategoryAxis Padding="20" />
-                <RadzenValueAxis Formatter="@FormatAsUSD">
-                    <RadzenGridLines Visible="true" />
-                    <RadzenAxisTitle Text="Revenue in USD" />
-                </RadzenValueAxis>
-            </RadzenChart>
-        </div>
-    </div>
-</div>
+<RadzenStack class="rz-p-0 rz-p-md-6 rz-p-lg-12">
+    <RadzenCard Variant="Variant.Outlined">
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem" Wrap="FlexWrap.Wrap">
+            <RadzenCheckBox @bind-Value="@annotation" Name="annotation"></RadzenCheckBox>
+            <RadzenLabel Text="Annotation" Component="annotation" />
+        </RadzenStack>
+    </RadzenCard>
+
+    <RadzenChart>
+        <RadzenLineSeries Smooth="true" Data="@revenue2024" CategoryProperty="Date" Title="2024" ValueProperty="Revenue" RenderingOrder="1">
+            <RadzenSeriesAnnotation Visible="@annotation" TItem="DataItem" Data="@revenue2024[7]" OffsetY="-16" Text="Acquisition" />
+            <RadzenSeriesAnnotation Visible="@annotation" TItem="DataItem" Data="@revenue2024[5]" OffsetY="-16" Text="IPO" Fill="#ff504d" />
+            <RadzenMarkers MarkerType="MarkerType.Circle" />
+        </RadzenLineSeries>
+        <RadzenCategoryAxis Padding="20" />
+        <RadzenValueAxis Formatter="@FormatAsUSD">
+            <RadzenGridLines Visible="true" />
+            <RadzenAxisTitle Text="Revenue in USD" />
+        </RadzenValueAxis>
+    </RadzenChart>
+</RadzenStack>
 
 @code {
     bool annotation = true;
@@ -36,7 +36,7 @@
         return ((double)value).ToString("C0", CultureInfo.CreateSpecificCulture("en-US"));
     }
 
-    DataItem[] revenue2023 = new DataItem[] {
+    DataItem[] revenue2024 = new DataItem[] {
         new DataItem
         {
             Date = "Jan",

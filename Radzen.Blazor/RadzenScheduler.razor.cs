@@ -63,6 +63,16 @@ namespace Radzen.Blazor
         /// <value>The template.</value>
         [Parameter]
         public RenderFragment<TItem> Template { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the additional content to be rendered in place of the default navigation buttons in the scheduler.
+        /// This property allows for complete customization of the navigation controls, replacing the native date navigation buttons (such as year, month, and day) with user-defined content or buttons.
+        /// Use this to add custom controls or interactive elements that better suit your application's requirements.
+        /// </summary>
+        /// <value>The custom navigation template to replace default navigation buttons.</value>
+        [Parameter]
+        public RenderFragment NavigationTemplate { get; set; }
+
 
         /// <summary>
         /// Gets or sets the data of RadzenScheduler. It will display an appointment for every item of the collection which is within the current view date range.
@@ -151,6 +161,42 @@ namespace Radzen.Blazor
         /// </example>
         [Parameter]
         public EventCallback<SchedulerSlotSelectEventArgs> SlotSelect { get; set; }
+
+        /// <summary>
+        /// A callback that will be invoked when the user clicks the Today button.
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// &lt;RadzenScheduler Data=@appointments TodaySelect=@OnTodaySelect&gt;
+        /// &lt;/RadzenScheduler&gt;
+        /// @code {
+        /// void OnTodaySelect(SchedulerTodaySelectEventArgs args)
+        /// {
+        ///     args.Today = DateTime.Today.AddDays(1);
+        /// }
+        /// }
+        /// </code>
+        /// </example>
+        [Parameter]
+        public EventCallback<SchedulerTodaySelectEventArgs> TodaySelect { get; set; }
+
+        /// <summary>
+        /// A callback that will be invoked when the user clicks a month header button.
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// &lt;RadzenScheduler Data=@appointments MonthSelect=@OnMonthSelect&gt;
+        /// &lt;/RadzenScheduler&gt;
+        /// @code {
+        /// void OnMonthSelect(SchedulerTodaySelectEventArgs args)
+        /// {
+        ///     args.Month = DateTime.Month.AddMonth(1);
+        /// }
+        /// }
+        /// </code>
+        /// </example>
+        [Parameter]
+        public EventCallback<SchedulerMonthSelectEventArgs> MonthSelect { get; set; }
 
         /// <summary>
         /// A callback that will be invoked when the user clicks an appointment in the current view. Commonly used to edit existing appointments.
@@ -336,6 +382,12 @@ namespace Radzen.Blazor
         }
 
         /// <inheritdoc />
+        public async Task SelectMonth(DateTime monthStart, IEnumerable<AppointmentData> appointments)
+        {
+            await MonthSelect.InvokeAsync(new SchedulerMonthSelectEventArgs { MonthStart = monthStart, Appointments = appointments, View = SelectedView });
+        }
+
+        /// <inheritdoc />
         public async Task<bool> SelectMore(DateTime start, DateTime end, IEnumerable<AppointmentData> appointments)
         {
             var args = new SchedulerMoreSelectEventArgs { Start = start, End = end, Appointments = appointments, View = SelectedView };
@@ -422,7 +474,11 @@ namespace Radzen.Blazor
 
         async Task OnToday()
         {
-            CurrentDate = DateTime.Now.Date;
+            var args = new SchedulerTodaySelectEventArgs { Today = DateTime.Now.Date };
+
+            await TodaySelect.InvokeAsync(args);
+
+            CurrentDate = args.Today;
 
             await InvokeLoadData();
         }
@@ -558,7 +614,7 @@ namespace Radzen.Blazor
             var predicate = $"{EndProperty} >= @0 && {StartProperty} < @1";
 
             appointments = Data.AsQueryable()
-                               .Where(predicate, start, end)
+                               .Where(DynamicLinqCustomTypeProvider.ParsingConfig, predicate, start, end)
                                .ToList()
                                .Select(item => new AppointmentData { Start = startGetter(item), End = endGetter(item), Text = textGetter(item), Data = item });
 
